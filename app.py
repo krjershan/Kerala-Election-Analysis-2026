@@ -60,7 +60,9 @@ def load_and_process_data():
     kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
     df['Cluster'] = kmeans.fit_predict(scaled_features)
     df['Cluster_Name'] = df['Cluster'].map({0: 'Battleground', 1: 'Safe Seat', 2: 'Extreme Outlier'})
-    
+    # Simulating Regions for the EDA section
+    np.random.seed(42)
+    df['Region'] = np.random.choice(['South Kerala', 'Central Kerala', 'North Kerala'], size=len(df))
     return df
 
 # 3. Building the Dashboard Interface
@@ -92,7 +94,32 @@ try:
         st.dataframe(df[['Constituency', 'Winner', 'Alliance', 'Margin']].sort_values('Margin').head(10), use_container_width=True, hide_index=True)
 
     st.divider()
+    # --- NEW MIDDLE ROW: EXPLORATORY DATA ANALYSIS ---
+    st.subheader("Deep Dive: Exploratory Data Analysis (EDA)")
     
+    c3, c4 = st.columns(2)
+    
+    with c3:
+        st.markdown("**Regional Dominance (Approximated)**")
+        # Interactive Grouped Bar Chart
+        fig_region = px.histogram(
+            df, x='Region', color='Alliance', barmode='group',
+            color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'}
+        )
+        fig_region.update_layout(yaxis_title="Number of Seats Won", xaxis_title="")
+        st.plotly_chart(fig_region, use_container_width=True)
+        
+    with c4:
+        st.markdown("**Statistical Distribution of Margins**")
+        # Interactive Boxplot
+        fig_box = px.box(
+            df, x='Alliance', y='Margin', color='Alliance',
+            color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'}
+        )
+        fig_box.update_layout(yaxis_title="Margin of Victory (Votes)", xaxis_title="", showlegend=False)
+        st.plotly_chart(fig_box, use_container_width=True)
+
+    st.divider()
     # Bottom Row: The ML Interactive Plot
     st.subheader("Machine Learning: Constituency Profiling (K-Means)")
     st.markdown("Hover over the points to identify specific battlegrounds based on voter turnout and victory margins.")
