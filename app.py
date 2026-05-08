@@ -46,8 +46,8 @@ def load_and_process_data():
 
     # Alliance Mapping
     def map_alliance(party):
-        if party in ['INC', 'IUML', 'RSP', 'KEC']: return 'UDF'
-        if party in ['CPI(M)', 'CPI', 'NCP', 'JD(S)', 'KEC(M)']: return 'LDF'
+        if party in ['INC', 'IUML', 'RSP', 'KEC', 'RMPOI', 'CMPKSC', 'KEC(J)', 'IND']: return 'UDF'
+        if party in ['CPI(M)', 'CPI', 'NCP', 'JD(S)', 'KEC(M)', 'RJD']: return 'LDF'
         if party in ['BJP', 'BDJS']: return 'NDA'
         return 'OTH'
 
