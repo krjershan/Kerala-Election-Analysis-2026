@@ -5,28 +5,28 @@ import plotly.express as px
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-# 1. Page Configuration
+
 st.set_page_config(page_title="Kerala Election Analytics", page_icon="📊", layout="wide")
 st.title("🗳️ Kerala Legislative Election 2026: Advanced Analytics")
 st.markdown("A data-driven deep dive into the election results, featuring exploratory data analysis, machine learning, and historical swing analysis.")
 
-# 2. Data Loading & Logic Pipeline
+
 @st.cache_data
 def load_and_process_data():
     # Load 2026 Data
     df_raw = pd.read_excel('10-Detailed_Results_1778164525.xlsx')
     
-    # Dynamic Header Detection & Row Slicing
+    
     header_idx = df_raw[df_raw.eq('AC NAME').any(axis=1)].index[0]
     df_raw.columns = df_raw.iloc[header_idx]
     df_clean = df_raw.iloc[header_idx + 1:].copy()
     df_clean = df_clean.dropna(subset=['AC NAME', 'CANDIDATE NAME', 'TOTAL'])
     
-    # Forcing Numeric Fields
+   
     df_clean['TOTAL'] = pd.to_numeric(df_clean['TOTAL'], errors='coerce')
     df_clean['TOTAL ELECTORS'] = pd.to_numeric(df_clean['TOTAL ELECTORS'], errors='coerce')
 
-    # Aggregating Candidate Rows Into 140 Constituency Winners
+    
     processed_data = []
     for constituency, group in df_clean.groupby('AC NAME'):
         group_sorted = group.sort_values(by='TOTAL', ascending=False).reset_index(drop=True)
@@ -46,7 +46,7 @@ def load_and_process_data():
 
     df = pd.DataFrame(processed_data)
 
-    # Alliance Mapping
+   
     def map_alliance(party):
         if party in ['INC', 'IUML', 'RSP', 'KEC', 'RMPOI', 'CMPKSC', 'KEC(J)', 'IND']: return 'UDF'
         if party in ['CPI(M)', 'CPI', 'NCP', 'JD(S)', 'KEC(M)', 'RJD']: return 'LDF'
@@ -54,11 +54,11 @@ def load_and_process_data():
         return 'OTH'
     df['Alliance'] = df['Party'].apply(map_alliance)
 
-    # Simulating Regions for Regional Breakdown
+   
     np.random.seed(42)
     df['Region'] = np.random.choice(['South Kerala', 'Central Kerala', 'North Kerala'], size=len(df))
 
-    # --- HISTORICAL SWING LOGIC ---
+  
     df_2021 = pd.DataFrame({
         'Constituency': df['Constituency'].unique(),
         'Margin_2021': np.random.randint(500, 40000, size=len(df))
@@ -71,7 +71,7 @@ def load_and_process_data():
     df['Margin_Swing'] = df['Margin'] - df['Margin_2021']
     df['Absolute_Swing'] = df['Margin_Swing'].abs()
     
-    # Machine Learning Clustering Engine
+    
     features = df[['Margin', 'Turnout_Percentage']]
     scaler = StandardScaler()
     scaled_features = scaler.fit_transform(features)
@@ -80,14 +80,14 @@ def load_and_process_data():
     
     return df
 
-# 3. User Interface Generation
+
 try:
     df = load_and_process_data()
     
-    # SECTION 1: 2026 Overview & Seat Share (Horizontal KPIs with Full Alliance Borders + Donut Below)
+    
     st.subheader("2026 Election Overview & Seat Share")
     
-    # Horizontal KPI Panel using custom HTML for full border colors
+    
     c1, c2, c3, c4 = st.columns(4)
     
     with c1:
@@ -122,14 +122,14 @@ try:
             </div>
         """, unsafe_allow_html=True)
     
-    # Donut Chart directly below the KPIs
+   
     st.markdown("<br><b>Alliance Assembly Share (2026)</b>", unsafe_allow_html=True)
     fig_pie = px.pie(df, names='Alliance', hole=0.4, color='Alliance', 
                      color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'})
     fig_pie.update_layout(margin=dict(t=20, b=20, l=0, r=0))
     st.plotly_chart(fig_pie, use_container_width=True)
 
-    # SECTION 2: Exploratory Data Analysis (EDA)
+    
     st.subheader("Exploratory Data Analysis Deep Dive")
     c_a, c_b = st.columns(2)
     with c_a:
@@ -145,7 +145,7 @@ try:
 
     st.divider()
 
-    # SECTION 3: Machine Learning Engine View
+    
     st.subheader("Machine Learning: Constituency Profiling (K-Means)")
     fig_ml = px.scatter(df, x='Turnout_Percentage', y='Margin', color='Cluster_Name',
                        hover_name='Constituency', hover_data=['Winner', 'Alliance'],
@@ -156,14 +156,14 @@ try:
 
     st.divider()
 
-    # SECTION 4: Historical Swing Analysis (Top 20 Diverging Bar Chart Only - Absolute Bottom Last)
+    
     st.subheader("Historical Swing Analysis (2021 vs 2026)")
     st.markdown("**Top 20 Most Extreme Election Swings**")
     
-    # Get exact top 20 rows based on absolute value magnitude
+    
     top_20_swings = df.sort_values('Absolute_Swing', ascending=False).head(20)
     
-    # Mapping colors: Green for positive swing, Red for negative swing
+    
     top_20_swings['Swing_Direction'] = np.where(top_20_swings['Margin_Swing'] > 0, 'Gain', 'Loss')
     
     fig_swing = px.bar(
