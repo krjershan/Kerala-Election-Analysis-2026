@@ -5,7 +5,7 @@ import plotly.express as px
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-# 1. Page Configuration (Fixed browser tab title here)
+# 1. Page Configuration
 st.set_page_config(page_title="Kerala Election Analytics", page_icon="📊", layout="wide")
 st.title("🗳️ Kerala Legislative Election 2026: Advanced Analytics")
 st.markdown("A data-driven deep dive into the election results, featuring exploratory data analysis, machine learning, and historical swing analysis.")
@@ -84,16 +84,26 @@ def load_and_process_data():
 try:
     df = load_and_process_data()
     
-    # Top KPI Metrics Panel (Removed the "Balanced" tags here)
-    st.subheader("Executive Summary")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Seats", "140")
-    c2.metric("UDF Seats", "102")
-    c3.metric("LDF Seats", "35")
-    c4.metric("NDA Seats", "3")
+    # SECTION 1: 2026 Overview & Seat Share (Donut and clean KPIs grouped together up front)
+    st.subheader("2026 Election Overview & Seat Share")
+    col_kpi, col_pie = st.columns([1, 1])
+    
+    with col_kpi:
+        st.markdown("**Executive Summary**")
+        st.metric("Total Seats", "140")
+        st.metric("UDF Seats", "102")
+        st.metric("LDF Seats", "35")
+        st.metric("NDA Seats", "3")
+        
+    with col_pie:
+        st.markdown("**Alliance Assembly Share (2026)**")
+        fig_pie = px.pie(df, names='Alliance', hole=0.4, color='Alliance', 
+                         color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'})
+        st.plotly_chart(fig_pie, use_container_width=True)
+
     st.divider()
 
-    # SECTION 1: Exploratory Data Analysis (EDA) - MOVED UP
+    # SECTION 2: Exploratory Data Analysis (EDA)
     st.subheader("Exploratory Data Analysis Deep Dive")
     c_a, c_b = st.columns(2)
     with c_a:
@@ -109,7 +119,7 @@ try:
 
     st.divider()
 
-    # SECTION 2: Machine Learning Engine View - MOVED UP
+    # SECTION 3: Machine Learning Engine View
     st.subheader("Machine Learning: Constituency Profiling (K-Means)")
     fig_ml = px.scatter(df, x='Turnout_Percentage', y='Margin', color='Cluster_Name',
                        hover_name='Constituency', hover_data=['Winner', 'Alliance'],
@@ -120,39 +130,30 @@ try:
 
     st.divider()
 
-    # SECTION 3: Seat Share & Top 20 Swing Analysis - MOVED TO THE BOTTOM LAST
+    # SECTION 4: Historical Swing Analysis (Top 20 Diverging Bar Chart Only - Absolute Bottom Last)
     st.subheader("Historical Swing Analysis (2021 vs 2026)")
-    col_left, col_right = st.columns([1, 2])
+    st.markdown("**Top 20 Most Extreme Election Swings**")
     
-    with col_left:
-        st.markdown("**Alliance Assembly Share**")
-        fig_pie = px.pie(df, names='Alliance', hole=0.4, color='Alliance', 
-                         color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'})
-        st.plotly_chart(fig_pie, use_container_width=True)
-
-    with col_right:
-        st.markdown("**Top 20 Most Extreme Election Swings**")
-        
-        # Get exact top 20 rows based on absolute value magnitude
-        top_20_swings = df.sort_values('Absolute_Swing', ascending=False).head(20)
-        
-        # Mapping colors: Green for positive swing, Red for negative swing
-        top_20_swings['Swing_Direction'] = np.where(top_20_swings['Margin_Swing'] > 0, 'Gain', 'Loss')
-        
-        fig_swing = px.bar(
-            top_20_swings, x='Margin_Swing', y='Constituency', orientation='h',
-            color='Swing_Direction', color_discrete_map={'Gain': '#2ca02c', 'Loss': '#d62728'},
-            hover_data=['Winner', 'Margin_2021', 'Margin']
-        )
-        
-        fig_swing.add_vline(x=0, line_width=1.5, line_color="black")
-        fig_swing.update_layout(
-            showlegend=False, 
-            yaxis={'categoryorder':'total ascending'},
-            xaxis_title="Change in Margin (Votes) -> Positive means gain, Negative means loss",
-            yaxis_title=""
-        )
-        st.plotly_chart(fig_swing, use_container_width=True)
+    # Get exact top 20 rows based on absolute value magnitude
+    top_20_swings = df.sort_values('Absolute_Swing', ascending=False).head(20)
+    
+    # Mapping colors: Green for positive swing, Red for negative swing
+    top_20_swings['Swing_Direction'] = np.where(top_20_swings['Margin_Swing'] > 0, 'Gain', 'Loss')
+    
+    fig_swing = px.bar(
+        top_20_swings, x='Margin_Swing', y='Constituency', orientation='h',
+        color='Swing_Direction', color_discrete_map={'Gain': '#2ca02c', 'Loss': '#d62728'},
+        hover_data=['Winner', 'Margin_2021', 'Margin']
+    )
+    
+    fig_swing.add_vline(x=0, line_width=1.5, line_color="black")
+    fig_swing.update_layout(
+        showlegend=False, 
+        yaxis={'categoryorder':'total ascending'},
+        xaxis_title="Change in Margin (Votes) -> Positive means gain, Negative means loss",
+        yaxis_title=""
+    )
+    st.plotly_chart(fig_swing, use_container_width=True)
 
 except Exception as e:
     st.error(f"Pipeline Deployment Error: {e}")
