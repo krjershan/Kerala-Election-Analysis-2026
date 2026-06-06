@@ -84,22 +84,22 @@ def load_and_process_data():
 try:
     df = load_and_process_data()
     
-    # SECTION 1: 2026 Overview & Seat Share (Donut and clean KPIs grouped together up front)
+    # SECTION 1: 2026 Overview & Seat Share (Horizontal KPIs + Donut Below)
     st.subheader("2026 Election Overview & Seat Share")
-    col_kpi, col_pie = st.columns([1, 1])
     
-    with col_kpi:
-        st.markdown("**Executive Summary**")
-        st.metric("Total Seats", "140")
-        st.metric("UDF Seats", "102")
-        st.metric("LDF Seats", "35")
-        st.metric("NDA Seats", "3")
-        
-    with col_pie:
-        st.markdown("**Alliance Assembly Share (2026)**")
-        fig_pie = px.pie(df, names='Alliance', hole=0.4, color='Alliance', 
-                         color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'})
-        st.plotly_chart(fig_pie, use_container_width=True)
+    # Horizontal KPI Panel
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total Seats", "140")
+    c2.metric("UDF Seats", "102")
+    c3.metric("LDF Seats", "35")
+    c4.metric("NDA Seats", "3")
+    
+    # Donut Chart directly below the KPIs
+    st.markdown("**Alliance Assembly Share (2026)**")
+    fig_pie = px.pie(df, names='Alliance', hole=0.4, color='Alliance', 
+                     color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'})
+    fig_pie.update_layout(margin=dict(t=20, b=20, l=0, r=0))
+    st.plotly_chart(fig_pie, use_container_width=True)
 
     st.divider()
 
