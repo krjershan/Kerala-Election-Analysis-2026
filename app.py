@@ -5,10 +5,10 @@ import plotly.express as px
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-# 1. Page Configuration
-st.set_page_config(page_title="Macromend Analytics", page_icon="📊", layout="wide")
+# 1. Page Configuration (Fixed browser tab title here)
+st.set_page_config(page_title="Kerala Election Analytics", page_icon="📊", layout="wide")
 st.title("🗳️ Kerala Legislative Election 2026: Advanced Analytics")
-st.markdown("A data-driven deep dive into the election results, featuring historical swing analysis and machine learning.")
+st.markdown("A data-driven deep dive into the election results, featuring exploratory data analysis, machine learning, and historical swing analysis.")
 
 # 2. Data Loading & Logic Pipeline
 @st.cache_data
@@ -58,7 +58,7 @@ def load_and_process_data():
     np.random.seed(42)
     df['Region'] = np.random.choice(['South Kerala', 'Central Kerala', 'North Kerala'], size=len(df))
 
-    # --- HISTORICAL SWING LOGIC (Matching Colab) ---
+    # --- HISTORICAL SWING LOGIC ---
     df_2021 = pd.DataFrame({
         'Constituency': df['Constituency'].unique(),
         'Margin_2021': np.random.randint(500, 40000, size=len(df))
@@ -84,16 +84,43 @@ def load_and_process_data():
 try:
     df = load_and_process_data()
     
-    # Top KPI Metrics Panel
+    # Top KPI Metrics Panel (Removed the "Balanced" tags here)
     st.subheader("Executive Summary")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Seats", "140")
-    c2.metric("UDF Seats", "102", "Balanced")
-    c3.metric("LDF Seats", "35", "Balanced")
+    c2.metric("UDF Seats", "102")
+    c3.metric("LDF Seats", "35")
     c4.metric("NDA Seats", "3")
     st.divider()
 
-    # SECTION 1: Seat Share & Top 20 Swing Analysis
+    # SECTION 1: Exploratory Data Analysis (EDA) - MOVED UP
+    st.subheader("Exploratory Data Analysis Deep Dive")
+    c_a, c_b = st.columns(2)
+    with c_a:
+        st.markdown("**Regional Performance Dominance**")
+        fig_hist = px.histogram(df, x='Region', color='Alliance', barmode='group',
+                               color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933'})
+        st.plotly_chart(fig_hist, use_container_width=True)
+    with c_b:
+        st.markdown("**Statistical Distribution of Win Margins**")
+        fig_box = px.box(df, x='Alliance', y='Margin', color='Alliance',
+                        color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933'})
+        st.plotly_chart(fig_box, use_container_width=True)
+
+    st.divider()
+
+    # SECTION 2: Machine Learning Engine View - MOVED UP
+    st.subheader("Machine Learning: Constituency Profiling (K-Means)")
+    fig_ml = px.scatter(df, x='Turnout_Percentage', y='Margin', color='Cluster_Name',
+                       hover_name='Constituency', hover_data=['Winner', 'Alliance'],
+                       color_discrete_map={'Battleground': '#2ca02c', 'Safe Seat': '#1f77b4', 'Extreme Outlier': '#d62728'})
+    fig_ml.update_traces(marker=dict(size=12, line=dict(width=1, color='white')))
+    fig_ml.update_layout(xaxis_title="Voter Turnout (%)", yaxis_title="Margin of Victory (Votes)")
+    st.plotly_chart(fig_ml, use_container_width=True)
+
+    st.divider()
+
+    # SECTION 3: Seat Share & Top 20 Swing Analysis - MOVED TO THE BOTTOM LAST
     st.subheader("Historical Swing Analysis (2021 vs 2026)")
     col_left, col_right = st.columns([1, 2])
     
@@ -118,7 +145,6 @@ try:
             hover_data=['Winner', 'Margin_2021', 'Margin']
         )
         
-        # Replicating the exact black vertical baseline from Colab
         fig_swing.add_vline(x=0, line_width=1.5, line_color="black")
         fig_swing.update_layout(
             showlegend=False, 
@@ -127,33 +153,6 @@ try:
             yaxis_title=""
         )
         st.plotly_chart(fig_swing, use_container_width=True)
-
-    st.divider()
-
-    # SECTION 2: Exploratory Data Analysis (EDA)
-    st.subheader("Exploratory Data Analysis Deep Dive")
-    c_a, c_b = st.columns(2)
-    with c_a:
-        st.markdown("**Regional Performance Dominance**")
-        fig_hist = px.histogram(df, x='Region', color='Alliance', barmode='group',
-                               color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933'})
-        st.plotly_chart(fig_hist, use_container_width=True)
-    with c_b:
-        st.markdown("**Statistical Distribution of Win Margins**")
-        fig_box = px.box(df, x='Alliance', y='Margin', color='Alliance',
-                        color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933'})
-        st.plotly_chart(fig_box, use_container_width=True)
-
-    st.divider()
-
-    # SECTION 3: Machine Learning Engine View
-    st.subheader("Machine Learning: Constituency Profiling (K-Means)")
-    fig_ml = px.scatter(df, x='Turnout_Percentage', y='Margin', color='Cluster_Name',
-                       hover_name='Constituency', hover_data=['Winner', 'Alliance'],
-                       color_discrete_map={'Battleground': '#2ca02c', 'Safe Seat': '#1f77b4', 'Extreme Outlier': '#d62728'})
-    fig_ml.update_traces(marker=dict(size=12, line=dict(width=1, color='white')))
-    fig_ml.update_layout(xaxis_title="Voter Turnout (%)", yaxis_title="Margin of Victory (Votes)")
-    st.plotly_chart(fig_ml, use_container_width=True)
 
 except Exception as e:
     st.error(f"Pipeline Deployment Error: {e}")
