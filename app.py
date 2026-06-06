@@ -84,24 +84,50 @@ def load_and_process_data():
 try:
     df = load_and_process_data()
     
-    # SECTION 1: 2026 Overview & Seat Share (Horizontal KPIs + Donut Below)
+    # SECTION 1: 2026 Overview & Seat Share (Horizontal KPIs with Alliance Borders + Donut Below)
     st.subheader("2026 Election Overview & Seat Share")
     
-    # Horizontal KPI Panel
+    # Horizontal KPI Panel using custom HTML for individual border colors
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Seats", "140")
-    c2.metric("UDF Seats", "102")
-    c3.metric("LDF Seats", "35")
-    c4.metric("NDA Seats", "3")
+    
+    with c1:
+        st.markdown("""
+            <div style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; border-left: 6px solid #808080;">
+                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6); font-weight: 500;">Total Seats</p>
+                <p style="margin: 5px 0 0 0; font-size: 30px; font-weight: 700; color: white;">140</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    with c2:
+        st.markdown("""
+            <div style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; border-left: 6px solid #19AAED;">
+                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6); font-weight: 500;">UDF Seats</p>
+                <p style="margin: 5px 0 0 0; font-size: 30px; font-weight: 700; color: white;">102</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    with c3:
+        st.markdown("""
+            <div style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; border-left: 6px solid #FF4B4B;">
+                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6); font-weight: 500;">LDF Seats</p>
+                <p style="margin: 5px 0 0 0; font-size: 30px; font-weight: 700; color: white;">35</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    with c4:
+        st.markdown("""
+            <div style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; border-left: 6px solid #FF9933;">
+                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6); font-weight: 500;">NDA Seats</p>
+                <p style="margin: 5px 0 0 0; font-size: 30px; font-weight: 700; color: white;">3</p>
+            </div>
+        """, unsafe_allow_html=True)
     
     # Donut Chart directly below the KPIs
-    st.markdown("**Alliance Assembly Share (2026)**")
+    st.markdown("<br><b>Alliance Assembly Share (2026)</b>", unsafe_allow_html=True)
     fig_pie = px.pie(df, names='Alliance', hole=0.4, color='Alliance', 
                      color_discrete_map={'UDF':'#19AAED', 'LDF':'#FF4B4B', 'NDA':'#FF9933', 'OTH':'#808080'})
     fig_pie.update_layout(margin=dict(t=20, b=20, l=0, r=0))
     st.plotly_chart(fig_pie, use_container_width=True)
-
-    st.divider()
 
     # SECTION 2: Exploratory Data Analysis (EDA)
     st.subheader("Exploratory Data Analysis Deep Dive")
